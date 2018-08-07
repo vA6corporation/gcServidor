@@ -1,0 +1,43 @@
+each row, index in lista
+  if row.inicio
+    tr(id=index draggable='true' ondrop='console.log("soltamos");drop=this.id; changeModal(this.id)' ondragstart='console.log(this.id); drag = this.id' ondragover='event.preventDefault();' ondragenter='console.log("suelta aca: "+this.id)')
+      td.text-center= index
+      td.text-center= formatAMPM(row.inicio)
+      td.text-center(id='t'+index)
+      td.text-center
+        - var estado = (row.estado ? {} : {'disabled':'disabled'})
+        if row.tiempo
+          input.btn.btn-dark.btn-sm.w-50(type='button' value=row.estado ? formatTiempo(row.tiempo) : 'Offline' onclick='$("#tiempoBtn").val('+index+');$("#libreBtn").val('+index+');$("#tiempoEstablecido").val(formatTiempo('+row.tiempo+'));$("#tiempoModal").modal("show"); tiempo='+row.tiempo)&attributes(estado)
+        else
+          input.btn.btn-secondary.btn-sm.w-50(type='button' value=row.estado ? 'Libre' : 'Offline' onclick='$("#tiempoBtn").val('+index+');$("#libreBtn").val('+index+');$("#tiempoEstablecido").val(formatTiempo('+row.tiempo+'));$("#tiempoModal").modal("show"); tiempo='+row.tiempo)&attributes(estado)
+      td.text-center(width='200')
+        if row.extras
+          input.btn.btn-warning.btn-sm.w-50(type='button' value=formatExtras(row.extras) onclick='$("#extrasModal").modal("show");$("#extrasEstablecido").val(formatExtras('+row.extras+'));$("#extrasBtn").val('+index+');$("#vaciarBtn").val('+index+'); extras='+row.extras)
+        else
+          input.btn.btn-info.btn-sm.w-50(type='button' value='Vacio'  onclick='$("#extrasModal").modal("show");$("#extrasEstablecido").val(formatExtras('+row.extras+'));$("#extrasBtn").val('+index+');$("#vaciarBtn").val('+index+'); extras='+row.extras)
+      td.text-center(width='200')
+        button.btn.btn-danger.btn-sm.mr-1.w-50(type='button' onclick='$("#cobrarModal").modal("show");$("#cobrarBtn").val('+index+').focus()') Cobrar
+        //- button.btn.btn-danger.btn-sm.mr-1(type='button' onclick='cobrar('+index+')') Cobrar
+        div.btn-group.dropright
+          button.btn.btn-light.btn-sm.dropdown-toggle(data-toggle="dropdown")
+            i.fas.fa-cog
+          div.dropdown-menu
+            button.dropdown-item(disabled) Apagar
+            button.dropdown-item Reiniciar
+            button.dropdown-item Prender
+  else
+    tr(id=index ondrop='drop=this.id;changeModal()' ondragover='allowDrop(event)')
+      td.text-center= index
+      td
+      td
+      td
+      td
+      td.text-center(width='200')
+        button.btn.btn-info.btn-sm.mr-1.w-50(type='button' onclick='activar('+index+')') Activar
+        div.btn-group.dropright
+          button.btn.btn-light.btn-sm.dropdown-toggle(data-toggle="dropdown")
+            i.fas.fa-cog
+          div.dropdown-menu
+            button.dropdown-item(onclick='$("#apagarModal").modal("show");$("#apagarBtn").val('+index+').focus()') Apagar
+            button.dropdown-item Reiniciar
+            button.dropdown-item Prender

@@ -1,0 +1,61 @@
+extends ./layout.pug
+block contenido
+  div.modal.fade(id='changeNumber' role='document' data-toggle="modal" data-backdrop="static" data-keyboard="false")
+    div.modal-dialog.modal-dialog-centered: div.modal-content(role="document")
+      div.modal-header
+        h5.modal-title Cambiar numero de PC
+      form(id='change')  
+        div.modal-body
+          input.form-control(id='id' type='number' min=1 placeholder='Ingrese N° de PC' onkeyup='console.log("click")' autofocus)
+        div.modal-footer
+          input.btn.btn-danger(id='cancelarModal' type='button' value='Cancelar' onclick='$("#changeNumber").modal("hide")')
+          input.btn.btn-info(type='submit' value='Guardar')
+  div(style='min-height: 100%; min-height: 100vh; display: flex; align-items: center;')
+    div.container
+      h1(class='display-1 fixed-top' style='padding-left:15px') #{id}
+      h1(id='title').display-1.text-center #{client.tiempo ? 'Tiempo terminado!...' : 'Terminal Bloqueado!...'}
+      hr
+      div.row
+        div.col
+        if client
+          -var cTime = new Date().getTime(); var tTranscurrido = cTime - client.inicio
+          if client.tiempo + 300000 >= tTranscurrido && client.tiempo
+            button.btn.btn-info.btn-lg(id='regalar' type='button' autofocus) Dame 5 minutos
+          if !client.tiempo
+            button.btn.btn-info.btn-lg(id='activar' type='button' autofocus) Activar
+        else
+          button.btn.btn-info.btn-lg(id='activar' type='button' autofocus) Activar
+        div.col
+  script.
+    var socket = io.connect('#{ip}:7766', {reconnect: true});
+    const remote = require('electron').remote;
+    const main = remote.require('./main.js');
+    var id = '#{id}';
+    
+    $('#activar').click(function(event) {
+      socket.emit("activar", {username: id})
+    });
+    
+    $('#regalar').click(function(event) {
+      socket.emit("regalarTiempo", {username: id})
+    });
+    
+    $(document).keydown(function(evt){
+    if (evt.keyCode==83 && (evt.ctrlKey)){
+        evt.preventDefault();
+        console.log('cambiamos');
+        $('#changeNumber').modal('show');
+      }
+    })
+    
+    $(document).keydown(function(evt){
+    if (evt.keyCode==117){
+        evt.preventDefault();
+        console.log('actualizamos');
+        location.reload();
+      }
+    })
+    
+    $('#change').submit(function(){
+      //- localStorage.id = $('#id').val();
+    })

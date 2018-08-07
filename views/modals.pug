@@ -1,0 +1,63 @@
+#changeModal.modal.fade(role='document' data-toggle="modal" tabindex='-1')
+  .modal-dialog: .modal-content(role="document")
+    .modal-header
+      h5.modal-title Confirmacion
+    form()
+      .modal-body Vamos a cambiar datos de la Pc {{drag}} a la Pc {{drop}}?...
+      .modal-footer
+        button.btn.btn-info(type='button' onclick='$("#changeModal").modal("hide")') Cancelar
+        input.btn.btn-danger(type='button' id='changeBtn' @click='change()' value='Cambiar')
+        
+#apagarModal.modal.fade(role='document' data-toggle="modal" tabindex='-1')
+  .modal-dialog: .modal-content(role="document")
+    .modal-header
+      h5.modal-title Confirmacion
+    form()
+      .modal-body Esta seguro de apagar el PC?... 
+      .modal-footer
+        button.btn.btn-info(type='button' onclick='$("#apagarModal").modal("hide")') Cancelar
+        input.btn.btn-danger(type='button' id='apagarBtn' @click='shutdown()' value='Apagar')
+        
+#cobrarModal.modal.fade(role='document' data-toggle="modal" tabindex='-1')
+  .modal-dialog: .modal-content(role="document")
+    .modal-header
+      h5.modal-title Confirmacion
+    form(id='cobrar')
+      .modal-body 
+        | Esta seguro de cobrar el PC 
+        strong {{currentEquipment}} 
+        | ?... 
+    .modal-footer
+        button.btn.btn-info(type='button' onclick='$("#cobrarModal").modal("hide")') Cancelar
+        input.btn.btn-danger(type='button' @click='cobrar()' value='Cobrar')
+        
+#tiempoModal.modal.fade(role='document' data-toggle="modal" tabindex='-1')
+  .modal-dialog: .modal-content(role="document")
+    .modal-header
+      h5.modal-title Establecer tiempo
+    .modal-body
+      .input-group.pr-5.pl-5
+        .input-group-prepend
+          button.btn.btn-secondary(type='button' onclick='tMenos(event)'): i.fas.fa-minus
+        input.form-control(type="button" v-model='formatTime(time)' tabindex='-1')
+        .input-group-append
+          button.btn.btn-info(type='button' onclick='tMas(event)'): i.fas.fa-plus
+      .modal-footer
+        button.btn(id='libreBtn' type='button' @click='leaveFree()') Dejar libre
+        input.btn.btn-info(id='tiempoBtn' type='button' @click='setTime()' value='Establecer')
+        
+#extrasModal.modal.fade(role='dialog' data-toggle="modal" tabindex='-1')
+  .modal-dialog(role='document'): .modal-content
+    .modal-header
+      h5.modal-title Agregar extra
+    form(autocomplete='off')
+      .modal-body
+        .input-group.pr-5.pl-5
+          .input-group-prepend
+            button.btn.btn-secondary(type='button' onclick='eMenos(event)'): i.fas.fa-minus
+          input.form-control(type="button" v-model='formatExtras(extras)')
+          .input-group-append
+            button.btn.btn-info(type='button' onclick='eMas(event)'): i.fas.fa-plus
+      .modal-footer
+        button#vaciarBtn.btn(type='button' @click='leaveEmpty()') Vaciar
+        button#extrasBtn.btn.btn-info(type='button' @click='setExtras()') Agregar

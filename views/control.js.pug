@@ -1,0 +1,267 @@
+script.
+  var app = new Vue({
+    el: '#app',
+    data: {
+      equipments: JSON.parse('!{JSON.stringify(equipments)}'),
+      currentEquipment: '',
+      currentTimestamp: Date.now(),
+      extras: 0,
+      time: 0,
+      drag: 0,
+      drop: 0,
+    },
+    methods: {
+      activar: function(numero) {
+        socket.emit("activar", {"username": numero});
+      },
+      desactivar: function(numero) {
+        console.log('Desactivar: '+numero);
+        this.currentEquipment = numero;
+        $("#cobrarModal").modal("show");
+        $("#cobrarBtn").focus();
+      },
+      cobrar: function() {
+        console.log('Cobrando: '+this.currentEquipment);
+        socket.emit("cobrar", {"username": this.currentEquipment});
+        $('#cobrarModal').modal('hide');
+      },
+      timeModal: function(numero) {
+        this.currentEquipment = numero;
+        this.time = this.equipments[numero].tiempo;
+        $("#tiempoModal").modal("show"); 
+      },
+      extrasModal: function(numero) {
+        this.currentEquipment = numero;
+        this.extras = this.equipments[numero].extras;
+        $("#extrasModal").modal("show"); 
+      },
+      setExtras: function() {
+        if (this.extras) {
+          socket.emit("establecerExtras", {
+           "username": this.currentEquipment,
+           "extras": this.extras,
+          });
+        }
+      $('#extrasModal').modal('hide');
+      },
+      setTime: function() {
+        if (app.time) {
+          console.log(this.time+' : '+this.currentEquipment);
+          socket.emit("establecerTiempo", {
+           "username": this.currentEquipment,
+           "tiempo": this.time,
+          });
+        }
+        $('#tiempoModal').modal('hide');
+      },
+      leaveFree: function() {
+        socket.emit("dejarLibre", {"username": this.currentEquipment});
+        $('#tiempoModal').modal('hide');
+      },
+      leaveEmpty: function() {
+        if (this.extras != null) {
+          socket.emit("vaciarExtras", {
+           "username": this.currentEquipment,
+          });
+        }
+        $('#extrasModal').modal('hide');
+      },
+      //- extras: function(extras) {
+      //-   $("#extrasModal").modal("show");
+      //-   $("#extrasEstablecido").val(formatExtras(extras));
+      //- },
+      addExtra: function(numero) {
+        $("#extrasModal").modal("show");
+        $("#extrasEstablecido").val(formatExtras(this.equipments[numero].extras));
+      },
+      formatExtras: function(extras) {
+        var soles = 0, centimos = 0;
+        while (extras >= 1) {
+          if (extras >= 1) {centimos++; extras -= 1;}
+          if (centimos >= 10) {soles++; centimos -= 10;}
+        }
+        return soles+'.'+centimos
+      },
+      ondrop: function(index, event) {
+        //if(event) var data = event.dataTransfer.getData("text");
+        console.log('Soltando: '+index);
+        this.drop = index;
+        this.changeModal();
+      },
+      ondrag: function(index, event) {
+        //if(event) event.dataTransfer.setData("text", index);
+        console.log('Arrastrando: '+index);
+        this.drag = index;
+      },
+      formatTime: function(time) {
+        var hours = 0, minutes = 0;
+        while (time >= 60000) {
+          if (time >= 60000) {minutes++; time -= 60000;}
+          if (minutes >= 60) {hours++; minutes -= 60;}
+        }
+        return hours+':'+minutes;
+      },
+      getTime: function(timestamp) {
+        var date = new Date(timestamp);
+        var hours = date.getHours();
+        var minutes = date.getMinutes();
+        var ampm = 'am';
+        if(hours > 12) {
+          hours -= 12;
+          ampm = 'pm';
+        }
+        return `${hours}:${minutes} ${ampm}`;
+      },
+      getHours: function() {
+        var date = new Date(timestamp);
+        return date.getHours()+':'+date.getMinutes();
+      },
+      timeElapsed: function(timestamp) {
+        var time = this.currentTimestamp - timestamp;
+        return this.formatTime(time);
+      },
+      changeModal: function(){
+        if (this.drag != this.drop && this.drag != 0) {
+          $('#changeModal').modal('show')
+        }
+        $('#changeBtn').focus()
+      },
+      change: function() {
+        socket.emit("cambiarPC", {
+         "drag": this.drag,
+         "drop": this.drop,
+        });
+        $('#changeModal').modal('hide')
+      },
+      shutdown: function() {
+        socket.emit("apagar", {
+          "username": this.currentEquipment,
+        })
+        $('#apagarModal').modal('hide');
+      }
+    }
+  });
+  
+  var socket = io.connect('#{ip}:7766', {reconnect: true});
+  socket.emit("add-control");
+  var lista = JSON.parse('!{JSON.stringify(equipments)}');
+  var tiempo = 0, drag = 0, drop = 0, extras=0;
+  var contarTiempo;
+  
+  socket.on("actualizar", function(data){
+    app.equipments = data.equipments;
+  });
+  
+  function tMas(event) {
+    if (event.ctrlKey) {
+      console.log('presionas control');
+      app.time += 300000
+    } else {
+      app.time += 1800000
+    }
+    console.log(app.time);
+  }
+  
+  function tMenos(event){
+    if (event.ctrlKey) {
+      console.log('presionas control');
+      app.time -= 300000
+    } else {
+      app.time -= 1800000
+    }
+    if (app.time < 300000) {
+      app.time = 0;
+    }
+    console.log(app.time);
+  }
+  
+  function eMas(event) {
+    if (event.ctrlKey) {
+      console.log('presionas control');
+      app.extras += 1
+    } else {
+      app.extras += 5
+    }
+  }
+  
+  function eMenos(event){
+    if (event.ctrlKey) {
+      console.log('presionas control');
+      app.extras -= 1
+    } else {
+      app.extras -= 5
+    }
+  }
+  
+  function establecerExtras(id){
+    console.log(id);
+    if (extras) {
+      console.log(extras+' : '+id);
+      socket.emit("establecerExtras", {
+       "username": id,
+       "extras": extras
+      });
+    }
+    $('#extrasModal').modal('hide');
+  }
+  
+  function vaciarExtras(id){
+    console.log(id+':'+extras);
+    console.log(typeof(extras));
+    if (extras != null) {
+      console.log('vaciando extra '+id);
+      socket.emit("vaciarExtras", {
+       "username": id
+      });
+    }
+    $('#extrasModal').modal('hide');
+  }
+  
+  $(window).keydown(function(event){
+    if (event.keyCode==38 && ($('#tiempoModal').hasClass('show'))){
+      event.preventDefault();
+      console.log('aumentamos');
+      tMas(event);
+    }
+    if (event.keyCode==40 && ($('#tiempoModal').hasClass('show'))){
+      event.preventDefault();
+      console.log('disminuimos');
+      tMenos(event);
+    }      
+    
+    if (event.keyCode==38 && ($('#extrasModal').hasClass('show'))){
+      event.preventDefault();
+      console.log('aumentamos');
+      eMas(event);
+    }
+    if (event.keyCode==40 && ($('#extrasModal').hasClass('show'))){
+      event.preventDefault();
+      console.log('disminuimos');
+      eMenos(event);
+    }      
+  })
+  
+  $(document).keydown(function(event){
+    if (event.keyCode==13 && ($('#tiempoModal').hasClass('show'))){
+      event.preventDefault();
+      app.setTime();
+    }
+    if (event.keyCode==13 && ($('#extrasModal').hasClass('show'))){
+      event.preventDefault();
+      establecerExtras($('#extrasBtn').val())
+    }
+  })
+  
+  socket.on('disconnect', function(){
+    $('#title').html('Conexion perdida con el servidor!...')
+    $('button').each(function(){
+      $(this).prop( "disabled", true );
+    })
+    $('input').each(function(){
+      $(this).prop( "disabled", true );
+    })
+  });
+  
+  $('.modal').on('shown.bs.modal', function (event) {
+    $(this).find('input')[0].focus();
+  });

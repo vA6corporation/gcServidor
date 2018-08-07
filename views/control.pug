@@ -1,0 +1,40 @@
+extends ./layout.pug
+block contenido
+  #app.container
+    include ./modals
+    h1(id='title').display-5.text-center Game Center Control
+    table.table.table-hover.table-sm
+      thead.thead-dark: tr
+        th.text-center(style="width: 50px") N°
+        th.text-center Inicio
+        th.text-center Contador
+        th.text-center Tiempo
+        th.text-center Extras
+        th.text-center Activar
+      tbody
+        tr(v-for='(item, index) in equipments' draggable @drop='ondrop(index, $event)' @dragstart='ondrag(index, $event)' @dragover='$event.preventDefault()' ondragenter='console.log("suelta aca: "+this.id)')
+          td.text-center {{index}}
+          td.text-center(v-if='equipments[index].inicio') {{getTime(item.inicio)}}
+          td.text-center(v-else)
+          td.text-center(v-if='equipments[index].inicio') {{timeElapsed(item.inicio)}}
+          td.text-center(v-else)
+          td.text-center
+            //tiempo
+            input.btn.btn-dark.btn-sm.w-50(type='button' :value='formatTime(equipments[index].tiempo)' @click='timeModal(index)' v-if='item.tiempo')
+            input.btn.btn-secondary.btn-sm.w-50(type='button' value='Libre' @click='timeModal(index)' v-else-if='item.inicio')
+          td.text-center(width='200')
+            //extras
+            input.btn.btn-warning.btn-sm.w-50(type='button' :value='formatExtras(equipments[index].extras)' @click='extrasModal(index)' v-if='item.extras')
+            input.btn.btn-info.btn-sm.w-50(type='button' value='Vacio'  @click='extrasModal(index)' v-else-if='item.inicio')
+          td.text-center(width='200')
+            //activar
+            .btn-group
+              button.btn.btn-info.btn-sm(type='button' @click='activar(index)' v-if='!item.inicio') Activar
+              button.btn.btn-danger.btn-sm.btn-block(type='button' @click='desactivar(index)' v-else) Cobrar
+              button.btn.btn-secondary.btn-sm.dropdown-toggle.dropdown-toggle-split(type='button', data-toggle='dropdown')
+                span.sr-only Toggle Dropdown
+              .dropdown-menu
+                a.dropdown-item(href='#' data-toggle='modal' data-target='#apagarModal' @click='currentEquipment = index') Apagar
+                a.dropdown-item(href='#') Reiniciar
+  script(src=baseUrl('js/vue.min.js'))
+  include ./control.js.pug
