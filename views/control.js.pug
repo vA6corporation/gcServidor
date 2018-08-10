@@ -265,3 +265,7 @@ script.
   $('.modal').on('shown.bs.modal', function (event) {
     $(this).find('input')[0].focus();
   });
+  
+  setInterval(function() {
+    app.currentTimestamp = Date.now();
+  }, 30000);

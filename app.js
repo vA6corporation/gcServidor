@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
-const ip = '192.168.1.202';
+const ip = '192.168.1.201';
 
 app.use(express.static('public'));
 app.set('view engine', 'pug');
